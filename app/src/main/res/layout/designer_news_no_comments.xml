@@ -16,14 +16,17 @@
   limitations under the License.
   -->
 
-<TextView
+<io.plaidapp.ui.widget.BaselineGridTextView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@android:id/empty"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/spacing_huge"
-    android:layout_marginBottom="@dimen/spacing_huge"
+    android:paddingStart="@dimen/padding_normal"
+    app:topPaddingHint="@dimen/spacing_large"
+    android:paddingEnd="@dimen/padding_normal"
+    android:paddingBottom="@dimen/spacing_large"
     android:clickable="false"
     android:drawableTop="@drawable/ic_no_comments"
     android:gravity="center"

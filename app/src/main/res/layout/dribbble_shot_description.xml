@@ -19,6 +19,7 @@
 <GridLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:alignmentMode="alignBounds"
@@ -35,21 +36,7 @@
         android:background="@drawable/mid_grey_bounded_ripple" />
 
     <include
-        layout="@layout/dribbble_shot_title"
-        android:id="@+id/shot_title"
-        android:layout_columnSpan="3"
-        android:layout_width="match_parent"
-        android:layout_marginBottom="@dimen/spacing_large" />
-
-    <io.plaidapp.ui.widget.BaselineGridTextView
-        android:id="@+id/shot_description"
-        android:layout_columnSpan="3"
-        android:paddingStart="@dimen/padding_normal"
-        android:paddingEnd="@dimen/padding_normal"
-        android:textColorLink="@color/dribbble_links"
-        android:textColorHighlight="@color/dribbble_link_highlight"
-        tools:text="Check out this sweet eye candy!"
-        style="@style/Widget.Plaid.DribbbleShotDescription" />
+        layout="@layout/dribbble_shot_title" />
 
     <LinearLayout
         android:id="@+id/shot_actions"
@@ -66,7 +53,7 @@
             android:layout_weight="1"
             android:drawableTop="@drawable/ic_heart_full_24dp_grey"
             tools:text="33 likes"
-            style="@style/Widget.Plaid.DribbleShotAction" />
+            style="@style/Widget.Plaid.InlineActionButton" />
 
         <Button
             android:id="@+id/shot_view_count"
@@ -76,7 +63,7 @@
             android:drawableTop="@drawable/ic_views_24dp"
             android:background="@null"
             tools:text="33 views"
-            style="@style/Widget.Plaid.DribbleShotAction" />
+            style="@style/Widget.Plaid.InlineActionButton" />
 
         <Button
             android:id="@+id/shot_share_action"
@@ -86,22 +73,22 @@
             android:layout_marginBottom="@dimen/spacing_normal"
             android:drawableTop="@drawable/ic_action_share_24dp"
             android:text="@string/share"
-            style="@style/Widget.Plaid.DribbleShotAction" />
+            style="@style/Widget.Plaid.InlineActionButton" />
 
     </LinearLayout>
 
-    <TextView
+    <io.plaidapp.ui.widget.BaselineGridTextView
         android:id="@+id/player_name"
         android:layout_gravity="end"
         android:layout_width="wrap_content"
         android:gravity="end"
         android:layout_marginTop="@dimen/padding_normal"
-        android:paddingTop="@dimen/avatar_padding"
+        app:topPaddingHint="@dimen/avatar_padding"
         android:textAppearance="@style/TextAppearance.CommentAuthor"
         android:clickable="false"
         tools:text="—Nick B" />
 
-    <io.plaidapp.ui.widget.ForegroundImageView
+    <io.plaidapp.ui.widget.CircularImageView
         android:id="@+id/player_avatar"
         android:layout_width="@dimen/avatar_bounds"
         android:layout_height="@dimen/avatar_bounds"
@@ -122,7 +109,7 @@
         android:layout_width="@dimen/avatar_margin"
         android:layout_rowSpan="2" />
 
-    <TextView
+    <io.plaidapp.ui.widget.BaselineGridTextView
         android:id="@+id/shot_time_ago"
         android:layout_gravity="end"
         android:gravity="end"

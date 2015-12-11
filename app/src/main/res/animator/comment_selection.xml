@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <!--
   Copyright 2015 Google Inc.
 
@@ -17,19 +16,21 @@
   -->
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:state_activated="true">
+
+    <item android:state_activated="true">
         <objectAnimator
-            android:duration="@android:integer/config_shortAnimTime"
             android:propertyName="translationZ"
             android:valueTo="@dimen/z_card"
-            android:valueType="floatType" />
+            android:duration="@android:integer/config_shortAnimTime"
+            android:interpolator="@android:interpolator/fast_out_slow_in" />
     </item>
+
     <item>
         <objectAnimator
-            android:duration="@android:integer/config_shortAnimTime"
             android:propertyName="translationZ"
             android:valueTo="0dp"
-            android:valueType="floatType" />
+            android:duration="@android:integer/config_shortAnimTime"
+            android:interpolator="@android:interpolator/fast_out_slow_in" />
     </item>
+
 </selector>

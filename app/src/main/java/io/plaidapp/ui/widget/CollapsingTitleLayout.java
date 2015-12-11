@@ -73,6 +73,7 @@ public class CollapsingTitleLayout extends FrameLayout {
     private CollapsingTextHelper collapsingText;
     private StaticLayout layout;
     private Line[] lines;
+    private int calculatedWithWidth;
     private int lineCount;
 
     public CollapsingTitleLayout(Context context) {
@@ -129,7 +130,8 @@ public class CollapsingTitleLayout extends FrameLayout {
                     R.styleable.CollapsingTitleLayout_titleInsetBottom, 0);
         }
 
-        final int textAppearance = a.getResourceId(R.styleable.CollapsingTitleLayout_android_textAppearance,
+        final int textAppearance = a.getResourceId(
+                R.styleable.CollapsingTitleLayout_android_textAppearance,
                 android.R.style.TextAppearance);
         TypedArray atp = getContext().obtainStyledAttributes(textAppearance,
                 R.styleable.CollapsingTextAppearance);
@@ -195,7 +197,9 @@ public class CollapsingTitleLayout extends FrameLayout {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         final int width = MeasureSpec.getSize(widthMeasureSpec);
 
-        recalculate(width);
+        if (width != calculatedWithWidth) {
+            recalculate(width);
+        }
 
         final int desiredHeight = getDesiredHeight();
         int height;
@@ -295,6 +299,7 @@ public class CollapsingTitleLayout extends FrameLayout {
                         lineBottomScrollOffset + fadeDistance);
             }
         }
+        calculatedWithWidth = width;
     }
 
     private void createLayout(int width, int lineSpacingAdd) {

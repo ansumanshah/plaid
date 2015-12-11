@@ -16,25 +16,23 @@
   -->
 
 <transitionSet
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:transitionOrdering="together"
+    android:duration="400"
+    android:interpolator="@android:interpolator/linear_out_slow_in">
 
-    <!--<fade>-->
-        <!--<targets>-->
-            <!--<target android:excludeId="@android:id/navigationBarBackground" />-->
-            <!--<target android:excludeId="@android:id/statusBarBackground" />-->
-        <!--</targets>-->
-    <!--</fade>-->
-
-    <transition
-        class="io.plaidapp.ui.transitions.Pop"
-        android:duration="@android:integer/config_shortAnimTime"
-        android:startDelay="@android:integer/config_shortAnimTime"
-        android:interpolator="@android:interpolator/fast_out_slow_in">
+    <slide android:slideEdge="top">
         <targets>
-            <target android:targetId="@id/fab" />
+            <target android:excludeId="@android:id/navigationBarBackground" />
+            <target android:excludeId="@android:id/statusBarBackground" />
         </targets>
-    </transition>
+    </slide>
 
-    <fade />
+    <fade android:duration="@android:integer/config_mediumAnimTime">
+        <targets>
+            <target android:targetId="@android:id/navigationBarBackground" />
+            <target android:targetId="@android:id/statusBarBackground" />
+        </targets>
+    </fade>
 
 </transitionSet>

@@ -15,8 +15,15 @@
   limitations under the License.
   -->
 
-<nine-patch
+<io.plaidapp.ui.widget.BaselineGridTextView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@drawable/grid_item_background"
-    android:tint="@color/product_hunt"
-    android:tintMode="multiply" />
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/libraries_intro"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/spacing_xlarge"
+    android:layout_marginBottom="@dimen/spacing_normal"
+    android:padding="@dimen/padding_normal"
+    android:text="@string/about_libs_intro"
+    style="@style/Widget.Plaid.About"
+    tools:showIn="@layout/about_libs" />

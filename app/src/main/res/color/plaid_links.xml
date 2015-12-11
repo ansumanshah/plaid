@@ -15,22 +15,9 @@
   limitations under the License.
   -->
 
-<layer-list
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- blue background -->
-    <item>
-        <color android:color="@color/designer_news"/>
-    </item>
+    <item android:state_pressed="true" android:color="@color/text_primary_light" />
+    <item android:color="@color/primary_dark" />
 
-    <!-- bottom divider -->
-    <item android:height="@dimen/divider_height" android:gravity="bottom">
-        <color android:color="@color/divider"/>
-    </item>
-
-    <!-- right divider -->
-    <item android:width="@dimen/divider_height" android:gravity="end">
-        <color android:color="@color/divider"/>
-    </item>
-
-</layer-list>
+</selector>

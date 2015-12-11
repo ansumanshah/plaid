@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <!--
   Copyright 2015 Google Inc.
 
@@ -41,11 +40,12 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:layout_marginStart="@dimen/til_margin_fix"
         app:hintTextAppearance="@style/TextAppearance.FloatLabelHint">
 
         <EditText
             android:id="@+id/comment"
-            android:hint="reply"
+            android:hint="@string/hint_reply"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"

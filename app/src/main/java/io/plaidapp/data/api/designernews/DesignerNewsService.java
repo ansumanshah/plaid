@@ -19,13 +19,14 @@ package io.plaidapp.data.api.designernews;
 import java.util.Map;
 
 import io.plaidapp.data.api.designernews.model.AccessToken;
+import io.plaidapp.data.api.designernews.model.Comment;
 import io.plaidapp.data.api.designernews.model.NewStoryRequest;
 import io.plaidapp.data.api.designernews.model.StoriesResponse;
-import io.plaidapp.data.api.designernews.model.Story;
 import io.plaidapp.data.api.designernews.model.StoryResponse;
 import io.plaidapp.data.api.designernews.model.UserResponse;
 import retrofit.Callback;
 import retrofit.http.Body;
+import retrofit.http.Field;
 import retrofit.http.FieldMap;
 import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
@@ -76,5 +77,24 @@ public interface DesignerNewsService {
     @POST("/api/v2/stories")
     void postStory(@Body NewStoryRequest story,
                    Callback<StoriesResponse> callback);
+
+    @FormUrlEncoded
+    @POST("/api/v1/stories/{id}/reply")
+    void comment(@Path("id") long storyId,
+                 @Field("comment[body]") String comment,
+                 Callback<Comment> callback);
+
+    @FormUrlEncoded
+    @POST("/api/v1/comments/{id}/reply")
+    void replyToComment(@Path("id") long commentId,
+                        @Field("comment[body]") String comment,
+                        Callback<Comment> callback);
+
+    @POST("/api/v1/comments/{id}/upvote")
+    void upvoteComment(@Path("id") long commentId,
+                       @Body String ignored,  // can remove when retrofit releases this fix:
+                       // https://github
+                       // .com/square/retrofit/commit/19ac1e2c4551448184ad66c4a0ec172e2741c2ee
+                       Callback<Comment> callback);
 
 }
