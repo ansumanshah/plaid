@@ -29,7 +29,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
 import android.text.SpannableStringBuilder;
@@ -64,6 +63,7 @@ import io.plaidapp.data.SearchDataManager;
 import io.plaidapp.data.pocket.PocketUtils;
 import io.plaidapp.ui.recyclerview.InfiniteScrollListener;
 import io.plaidapp.ui.recyclerview.SlideInItemAnimator;
+import io.plaidapp.ui.recyclerview.SpannedGridLayoutManager;
 import io.plaidapp.ui.widget.BaselineGridTextView;
 import io.plaidapp.util.AnimUtils;
 import io.plaidapp.util.ImeUtils;
@@ -95,6 +95,7 @@ public class SearchActivity extends Activity {
     @BindView(R.id.results_scrim) View resultsScrim;
     private BaselineGridTextView noResults;
     @BindInt(R.integer.num_columns) int columns;
+    @BindInt(R.integer.expanded_item_column_span) int expandedItemColSpan;
     @BindDimen(R.dimen.z_app_bar) float appBarElevation;
     private Transition auto;
 
@@ -149,17 +150,13 @@ public class SearchActivity extends Activity {
                 }
             }
         };
-        adapter = new FeedAdapter(this, dataManager, columns, PocketUtils.isPocketInstalled(this));
+        adapter = new FeedAdapter(this, dataManager, columns, expandedItemColSpan,
+                PocketUtils.isPocketInstalled(this));
         setExitSharedElementCallback(FeedAdapter.createSharedElementReenterCallback(this));
         results.setAdapter(adapter);
         results.setItemAnimator(new SlideInItemAnimator());
-        GridLayoutManager layoutManager = new GridLayoutManager(this, columns);
-        layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-            @Override
-            public int getSpanSize(int position) {
-                return adapter.getItemColumnSpan(position);
-            }
-        });
+        SpannedGridLayoutManager layoutManager =
+                new SpannedGridLayoutManager(adapter, columns,  4f / 3f);
         results.setLayoutManager(layoutManager);
         results.addOnScrollListener(new InfiniteScrollListener(layoutManager, dataManager) {
             @Override
