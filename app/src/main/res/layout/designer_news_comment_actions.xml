@@ -22,12 +22,12 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="?android:listPreferredItemHeight"
-    android:paddingStart="@dimen/spacing_normal"
-    android:paddingEnd="@dimen/padding_normal"
+    android:paddingStart="@dimen/designer_news_story_comment_actions_padding_start"
+    android:paddingEnd="@dimen/designer_news_story_comment_actions_padding_end"
     android:paddingBottom="@dimen/spacing_normal"
     android:clipToPadding="false"
     android:background="@color/selected_comment_background"
-    android:elevation="@dimen/z_card">
+    android:elevation="@dimen/designer_news_story_comment_action_elevation">
 
     <Button
         android:id="@+id/comment_votes"
@@ -66,7 +66,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end"
         android:padding="@dimen/spacing_normal"
-        android:src="@drawable/ic_add_comment_state"
+        android:src="@drawable/ic_add_comment"
         android:background="?android:selectableItemBackgroundBorderless"
         android:visibility="invisible" />
 

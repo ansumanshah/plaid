@@ -15,19 +15,22 @@
   limitations under the License.
   -->
 
-<transitionSet xmlns:android="http://schemas.android.com/apk/res/android"
-    android:duration="300"
-    android:interpolator="@android:interpolator/fast_out_slow_in"
+<transitionSet
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:duration="350"
     android:transitionOrdering="together">
 
-    <changeBounds>
+    <!-- can't use a pathMotion here as it causes the frame and the shot
+         to separate while moving which looks bad :( -->
+    <changeBounds android:interpolator="@android:interpolator/fast_out_slow_in">
         <targets>
-            <target android:targetId="@id/container" />
+            <target android:targetId="@id/draggable_frame" />
         </targets>
     </changeBounds>
 
     <transition
-        class="io.plaidapp.ui.transitions.ShotSharedEnter">
+        class="io.plaidapp.ui.transitions.ShotSharedEnter"
+        android:interpolator="@android:interpolator/fast_out_slow_in">
         <targets>
             <target android:targetId="@id/shot" />
         </targets>

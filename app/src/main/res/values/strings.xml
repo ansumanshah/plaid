@@ -63,7 +63,7 @@
     <!-- new designer news story -->
     <string name="new_story_title">Post a story to Designer News</string>
     <string name="new_story_instructions">Submit a link or provide a comment to start a discussion.</string>
-    <string name="new_story_link_or_comment">Include a url <b>or</b> a comment</string>
+    <string name="new_story_link_or_comment">Include a link <b>or</b> a comment</string>
     <string name="new_story_post_title">Post title</string>
     <string name="new_story_url">Url</string>
     <string name="new_story_url_hint">Link</string>
@@ -77,6 +77,9 @@
     <string name="password">Password</string>
     <string name="sign_up">Sign up</string>
     <string name="dn_login_action">Log in</string>
+
+    <!-- dribble login -->
+    <string name="dribbble_login_failed">Login failed</string>
 
     <!-- designer news story -->
     <string name="upvote_story">Upvote story</string>
@@ -102,8 +105,28 @@
     </plurals>
     <string name="share">share</string>
     <string name="prospects_cant_post">Sorry but prospects cannot comment :(</string>
+    <string name="bad_dribbble_shot_url">Can\'t open that link :(</string>
 
-    <!-- dribbble login -->
+    <!-- dribbble player -->
+    <string name="follow">Follow</string>
+    <string name="following">Following</string>
+    <plurals name="shots">
+        <item quantity="zero">no shots</item>
+        <item quantity="one">%s shot</item>
+        <item quantity="other">%s shots</item>
+    </plurals>
+    <plurals name="follower_count">
+        <item quantity="zero">no followers</item>
+        <item quantity="one">%s follower</item>
+        <item quantity="other">%s followers</item>
+    </plurals>
+
+    <!-- dribbble player sheet -->
+    <plurals name="fans">
+        <item quantity="zero">No Fans</item>
+        <item quantity="one">%s Fan</item>
+        <item quantity="other">%s Fans</item>
+    </plurals>
 
     <!-- about screen -->
     <string name="about_plaid_0">Plaid is a source of design news &amp; inspiration that serves as a concrete example of [material design principles](https://www.google.com/design/spec/material-design/introduction.html#introduction-principles). Plaid pulls data from [Designer News](https://www.designernews.co/), [Dribbble](https://dribbble.com/) &amp; [Product Hunt](https://www.producthunt.com/); it is in no way an official client for these services nor endorsed by them. It is rather good&#160;though.</string>
@@ -125,8 +148,10 @@
     <string name="transition_dribbble_login" translatable="false">dribbble_login</string>
     <string name="transition_designer_news_login" translatable="false">transition_designer_news_login</string>
     <string name="transition_new_designer_news_post" translatable="false">new_designer_news_post</string>
+    <string name="transition_player_avatar" translatable="false">transition_player_avatar</string>
+    <string name="transition_player_background" translatable="false">transition_player_background</string>
 
     <!-- content authorities -->
-    <string name="share_authority"  translatable="false">io.plaidapp.shareprovider</string>
+    <string name="share_authority" translatable="false">io.plaidapp.shareprovider</string>
 
 </resources>

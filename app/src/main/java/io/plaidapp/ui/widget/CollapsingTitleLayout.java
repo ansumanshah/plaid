@@ -22,7 +22,9 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewCompat;
 import android.text.Layout;
@@ -31,26 +33,29 @@ import android.text.Spanned;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
-import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import io.plaidapp.R;
+import io.plaidapp.ui.span.TextColorSpan;
+import io.plaidapp.ui.transitions.ReflowText;
 import io.plaidapp.util.CollapsingTextHelper;
-import io.plaidapp.util.ColorUtils;
 import io.plaidapp.util.FontUtil;
 import io.plaidapp.util.ViewUtils;
 
 /**
- * A layout that draws a displayText and can collapse down to a condensed size.  If the displayText shows over
- * multiple lines then it will fade out line by line as it collapses. It displayText is a single line then
- * text is displayed as large as possible initially and scaled down to fit the collapsed state.
+ * A layout that draws a title and can collapse down to a condensed size.  If the title shows over
+ * multiple lines then it will fade out line by line as it collapses. If the title is a single
+ * line then text is initially displayed as large as possible and then scaled down to fit the within
+ * the collapsed size.
  */
-public class CollapsingTitleLayout extends FrameLayout {
+public class CollapsingTitleLayout extends FrameLayout implements ReflowText.Reflowable {
 
-    private static final float density = 420f / 160f;
+    // constants
+    private static final int BREAK_STRATEGY = Layout.BREAK_STRATEGY_HIGH_QUALITY;
 
     // configurable attributes
     private int titleInsetStart;
@@ -75,6 +80,7 @@ public class CollapsingTitleLayout extends FrameLayout {
     private Line[] lines;
     private int calculatedWithWidth;
     private int lineCount;
+    private float lineSpacingAdd;
 
     public CollapsingTitleLayout(Context context) {
         this(context, null, 0, 0);
@@ -237,12 +243,12 @@ public class CollapsingTitleLayout extends FrameLayout {
         int fontHeight = Math.abs(fm.ascent - fm.descent) + fm.leading;
         final int baselineAlignedLineHeight =
                 (int) (fourDip * (float) Math.ceil(lineHeightHint / fourDip));
-        final int lineSpacingAdd = baselineAlignedLineHeight - fontHeight;
+        lineSpacingAdd = Math.max(0, baselineAlignedLineHeight - fontHeight);
 
         // now create the layout with our desired insets & line height
         createLayout(width, lineSpacingAdd);
 
-        // adjust the displayText top inset to vertically center text with the toolbar
+        // adjust the title top inset to vertically center text with the toolbar
         collapsedHeight = (int) Math.max(ViewUtils.getActionBarSize(getContext()),
                 (fourDip + baselineAlignedLineHeight + fourDip));
         titleInsetTop = (collapsedHeight - baselineAlignedLineHeight) / 2f;
@@ -276,8 +282,6 @@ public class CollapsingTitleLayout extends FrameLayout {
             collapsingText.setCollapsedTextGravity(GravityCompat.START | Gravity.CENTER_VERTICAL);
             collapsingText.setTypeface(paint.getTypeface());
 
-            fm = paint.getFontMetricsInt();
-            fontHeight = Math.abs(fm.ascent - fm.descent) + fm.leading;
             textTop = getHeight() - titleInsetBottom - fontHeight;
             scrollRange = getMinimumHeight() - (int) collapsedHeight;
         } else { // multi-line mode
@@ -286,7 +290,7 @@ public class CollapsingTitleLayout extends FrameLayout {
 
             // pre-calculate at what scroll offsets lines should disappear
             scrollRange = (int) (textTop - titleInsetTop);
-            final int fadeDistance = lineSpacingAdd + fm.descent; // line bottom to baseline
+            final int fadeDistance = layout.getLineBottom(0) - layout.getLineBaseline(0);
             lines = new Line[lineCount];
             for (int i = 1; i < lineCount; i++) {
                 int lineBottomScrollOffset =
@@ -294,7 +298,7 @@ public class CollapsingTitleLayout extends FrameLayout {
                 lines[i] = new Line(
                         layout.getLineStart(i),
                         layout.getLineEnd(i),
-                        new ForegroundColorSpan(paint.getColor()),
+                        new TextColorSpan(paint.getColor()),
                         lineBottomScrollOffset,
                         lineBottomScrollOffset + fadeDistance);
             }
@@ -302,7 +306,7 @@ public class CollapsingTitleLayout extends FrameLayout {
         calculatedWithWidth = width;
     }
 
-    private void createLayout(int width, int lineSpacingAdd) {
+    private void createLayout(int width, float lineSpacingAdd) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             createLayoutM(width, lineSpacingAdd);
         } else {
@@ -311,17 +315,18 @@ public class CollapsingTitleLayout extends FrameLayout {
     }
 
     @TargetApi(Build.VERSION_CODES.M)
-    private void createLayoutM(int width, int lineSpacingAdd) {
+    private void createLayoutM(int width, float lineSpacingAdd) {
         layout = StaticLayout.Builder.obtain(displayText, 0, displayText.length(), paint,
                 width - titleInsetStart - titleInsetEnd)
                 .setLineSpacing(lineSpacingAdd, 1f)
                 .setMaxLines(maxLines)
                 .setEllipsize(TextUtils.TruncateAt.END)
+                .setBreakStrategy(BREAK_STRATEGY)
                 .build();
         lineCount = layout.getLineCount();
     }
 
-    private void createLayoutPreM(int width, int lineSpacingAdd) {
+    private void createLayoutPreM(int width, float lineSpacingAdd) {
         layout = new StaticLayout(displayText,
                 paint,
                 width - titleInsetStart - titleInsetEnd,
@@ -332,7 +337,7 @@ public class CollapsingTitleLayout extends FrameLayout {
         lineCount = layout.getLineCount();
 
         if (lineCount > maxLines) {
-            // if it exceeds our max number of lines then truncate the displayText & recreate the layout
+            // if it exceeds our max number of lines then truncate the text & recreate the layout
             int endIndex = layout.getLineEnd(maxLines - 1) - 2; // minus 2 chars for the ellipse
             displayText = new SpannableStringBuilder(title.subSequence(0, endIndex) + "…");
             layout = new StaticLayout(displayText,
@@ -360,13 +365,15 @@ public class CollapsingTitleLayout extends FrameLayout {
                 lineAlpha = 0f;
             } else if (scrollOffset <= line.fullAlphaScrollOffset) {
                 lineAlpha = 1f;
-            } else if (scrollOffset > line.fullAlphaScrollOffset && scrollOffset < line.zeroAlphaScrollOffset) {
-                lineAlpha = 1f - (scrollOffset - line.zeroAlphaScrollOffset)
+            } else if (scrollOffset > line.fullAlphaScrollOffset
+                    && scrollOffset < line.zeroAlphaScrollOffset) {
+                lineAlpha = 1f - (scrollOffset - line.fullAlphaScrollOffset)
                         / (line.zeroAlphaScrollOffset - line.fullAlphaScrollOffset);
             }
             if (line.currentAlpha != lineAlpha) {
+                // mutating a span does not re-draw, need to remove and re-set it
                 displayText.removeSpan(line.span);
-                line.span = new ForegroundColorSpan(ColorUtils.modifyAlpha(paint.getColor(), lineAlpha));
+                line.span.setAlpha(lineAlpha);
                 displayText.setSpan(line.span, line.startIndex, line.endIndex,
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 line.currentAlpha = lineAlpha;
@@ -374,15 +381,86 @@ public class CollapsingTitleLayout extends FrameLayout {
         }
     }
 
+    @Override
+    public View getView() {
+        return this;
+    }
+
+    @Override
+    public String getText() {
+        return title.toString();
+    }
+
+    @Override
+    public Point getTextPosition() {
+        if (lineCount == 1) {
+            return collapsingText.getTextTopLeft();
+        } else {
+            return new Point(titleInsetStart, (int) Math.max(textTop - scrollOffset, titleInsetTop));
+        }
+    }
+
+    @Override
+    public int getTextWidth() {
+        return calculatedWithWidth - titleInsetStart - titleInsetEnd;
+    }
+
+    @Override
+    public int getTextHeight() {
+        return (int) (lineCount == 1 ? collapsingText.getExpandedBounds().height()
+                : Math.max(getHeight() - scrollOffset, collapsedHeight));
+    }
+
+    @Override
+    public float getLineSpacingAdd() {
+        return lineSpacingAdd;
+    }
+
+    @Override
+    public float getLineSpacingMult() {
+        return 1f;
+    }
+
+    @Override
+    public int getBreakStrategy() {
+        return BREAK_STRATEGY;
+    }
+
+    @Override
+    public float getLetterSpacing() {
+        return paint.getLetterSpacing();
+    }
+
+    @Override
+    public float getTextSize() {
+        return lineCount == 1 ? collapsingText.getCurrentTextSize() : paint.getTextSize();
+    }
+
+    @Override
+    public int getTextColor() {
+        return paint.getColor();
+    }
+
+    @Nullable
+    @Override
+    public String getFontName() {
+        return FontUtil.getName(paint.getTypeface());
+    }
+
+    @Override
+    public int getMaxLines() {
+        return maxLines;
+    }
+
     private class Line {
         public int startIndex;
         public int endIndex;
-        public ForegroundColorSpan span;
+        public TextColorSpan span;
         public int fullAlphaScrollOffset;
         public int zeroAlphaScrollOffset;
         public float currentAlpha = 1f;
 
-        public Line(int startIndex, int endIndex, ForegroundColorSpan span,
+        public Line(int startIndex, int endIndex, TextColorSpan span,
                     int fullAlphaScrollOffset, int zeroAlphaScrollOffset) {
             this.startIndex = startIndex;
             this.endIndex = endIndex;

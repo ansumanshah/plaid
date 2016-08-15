@@ -20,10 +20,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:paddingTop="@dimen/designer_news_story_comments_vertical_padding"
+    android:elevation="@dimen/designer_news_story_comment_elevation"
+    android:background="@color/designer_news_story_comment_background"
     android:orientation="vertical">
-
-    <!-- in landscape orientation, include a toolbar instead of the collapsing title layout -->
-    <include layout="@layout/designer_news_story_title_toolbar" />
 
     <io.plaidapp.ui.widget.BaselineGridTextView
         android:id="@+id/story_comment"
@@ -52,7 +52,7 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <Button
+        <io.plaidapp.ui.widget.BaselineGridTextView
             android:id="@+id/story_vote_action"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -66,12 +66,12 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <Button
+        <io.plaidapp.ui.widget.BaselineGridTextView
             android:id="@+id/story_share_action"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
-            android:drawableTop="@drawable/ic_action_share_24dp"
+            android:drawableTop="@drawable/avd_share"
             android:text="@string/share"
             style="@style/Widget.Plaid.InlineActionButton" />
 

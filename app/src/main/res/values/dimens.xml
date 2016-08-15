@@ -54,6 +54,14 @@
     <dimen name="comment_thread_width">4dp</dimen>
     <dimen name="comment_thread_gap">4dp</dimen>
     <dimen name="comment_separation">16dp</dimen>
+    <dimen name="designer_news_story_comment_elevation">0dp</dimen>
+    <dimen name="designer_news_story_comment_action_elevation">2dp</dimen>
+    <dimen name="designer_news_story_comment_horizontal_padding">0dp</dimen>
+    <dimen name="designer_news_story_comment_actions_padding_start">@dimen/spacing_normal</dimen>
+    <dimen name="designer_news_story_comment_actions_padding_end">@dimen/padding_normal</dimen>
+    <dimen name="designer_news_story_enter_comment_padding_start">@dimen/padding_normal_til</dimen>
+    <dimen name="designer_news_story_enter_comment_padding_end">@dimen/padding_normal</dimen>
+    <dimen name="designer_news_story_comments_vertical_padding">0dp</dimen>
 
     <!-- dribbble shot -->
     <dimen name="shot_collapsed_app_bar_height">168dp</dimen> <!-- 3 * ?android:actionBarSize -->
@@ -62,8 +70,14 @@
     <dimen name="avatar_bounds">48dp</dimen>
     <dimen name="avatar_padding">4dp</dimen> <!-- (avatar_bounds - avatar_size) / 2 -->
     <dimen name="avatar_margin">12dp</dimen> <!-- padding_normal - avatar_padding -->
+    <dimen name="avatar_ripple_radius">20dp</dimen> <!-- avatar_size / 2 -->
     <dimen name="comment_actions_height">40dp</dimen>
     <dimen name="comment_like_margin_adjustment">-8dp</dimen>
+
+    <!-- dribbble player -->
+    <dimen name="large_avatar_size">120dp</dimen> <!-- 2 * actionBarSize - 2 * avatar_padding -->
+    <dimen name="large_avatar_margin">28dp</dimen> <!-- spacing_large - avatar_padding -->
+    <dimen name="large_avatar_height">160dp</dimen> <!-- large_avatar_margin + large_avatar_size + avatar_margin -->
 
     <!-- bottom sheet -->
     <dimen name="bottom_sheet_width">@dimen/match_parent</dimen>

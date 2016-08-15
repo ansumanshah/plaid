@@ -22,14 +22,13 @@ import android.os.Parcelable;
 import android.support.annotation.ColorInt;
 import android.text.Spanned;
 import android.text.TextUtils;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import io.plaidapp.data.PlaidItem;
-import io.plaidapp.util.HtmlUtils;
+import io.plaidapp.util.DribbbleUtils;
 
 /**
  * Models a dibbble shot
@@ -55,6 +54,7 @@ public class Shot extends PlaidItem implements Parcelable {
     public final String likes_url;
     public final String projects_url;
     public final String rebounds_url;
+    public final boolean animated;
     public final List<String> tags;
     public User user;
     public final Team team;
@@ -83,6 +83,7 @@ public class Shot extends PlaidItem implements Parcelable {
                 String likes_url,
                 String projects_url,
                 String rebounds_url,
+                boolean animated,
                 List<String> tags,
                 User user,
                 Team team) {
@@ -106,6 +107,7 @@ public class Shot extends PlaidItem implements Parcelable {
         this.likes_url = likes_url;
         this.projects_url = projects_url;
         this.rebounds_url = rebounds_url;
+        this.animated = animated;
         this.tags = tags;
         this.user = user;
         this.team = team;
@@ -135,6 +137,7 @@ public class Shot extends PlaidItem implements Parcelable {
         likes_url = in.readString();
         projects_url = in.readString();
         rebounds_url = in.readString();
+        animated = in.readByte() != 0x00;
         tags = new ArrayList<String>();
         in.readStringList(tags);
         user = (User) in.readValue(User.class.getClassLoader());
@@ -145,14 +148,10 @@ public class Shot extends PlaidItem implements Parcelable {
     public Spanned getParsedDescription(ColorStateList linkTextColor,
                                         @ColorInt int linkHighlightColor) {
         if (parsedDescription == null && !TextUtils.isEmpty(description)) {
-            parsedDescription = HtmlUtils.parseHtml(description, linkTextColor, linkHighlightColor);
+            parsedDescription = DribbbleUtils.parseDribbbleHtml(description, linkTextColor,
+                    linkHighlightColor);
         }
         return parsedDescription;
-    }
-
-    public void weigh(long maxLikes) {
-        weight = 1f - (float) likes_count / maxLikes * 0.8f;
-        weight = Math.min(weight + weightBoost, 1f);
     }
 
     public static class Builder {
@@ -177,6 +176,7 @@ public class Shot extends PlaidItem implements Parcelable {
         private String likes_url;
         private String projects_url;
         private String rebounds_url;
+        private boolean animated;
         private List<String> tags;
         private User user;
         private Team team;
@@ -286,6 +286,11 @@ public class Shot extends PlaidItem implements Parcelable {
             return this;
         }
 
+        public Builder setAnimated(boolean animated) {
+            this.animated = animated;
+            return this;
+        }
+
         public Builder setTags(List<String> tags) {
             this.tags = tags;
             return this;
@@ -305,8 +310,8 @@ public class Shot extends PlaidItem implements Parcelable {
             return new Shot(id, title, description, width, height, images, views_count,
                     likes_count, comments_count, attachments_count, rebounds_count,
                     buckets_count, created_at, updated_at, html_url, attachments_url,
-                    buckets_url, comments_url, likes_url, projects_url, rebounds_url, tags, user,
-                    team);
+                    buckets_url, comments_url, likes_url, projects_url, rebounds_url, animated,
+                    tags, user, team);
         }
     }
 
@@ -354,6 +359,7 @@ public class Shot extends PlaidItem implements Parcelable {
         dest.writeString(likes_url);
         dest.writeString(projects_url);
         dest.writeString(rebounds_url);
+        dest.writeByte((byte) (animated ? 0x01 : 0x00));
         dest.writeStringList(tags);
         dest.writeValue(user);
         dest.writeValue(team);

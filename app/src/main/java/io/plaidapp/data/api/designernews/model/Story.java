@@ -75,6 +75,7 @@ public class Story extends PlaidItem implements Parcelable {
 
     protected Story(Parcel in) {
         super(in.readLong(), in.readString(), in.readString());
+        dataSource = in.readString();
         comment = in.readString();
         comment_html = in.readString();
         comment_count = in.readInt();
@@ -93,12 +94,6 @@ public class Story extends PlaidItem implements Parcelable {
         } else {
             comments = null;
         }
-    }
-
-    public void weigh(float maxDesignNewsComments, float maxDesignNewsVotes) {
-        weight = 1f - ((((float) comment_count) / maxDesignNewsComments) +
-                ((float) vote_count / maxDesignNewsVotes)) / 2f;
-        weight = Math.min(weight + weightBoost, 1f);
     }
 
     public static class Builder {
@@ -236,6 +231,7 @@ public class Story extends PlaidItem implements Parcelable {
         dest.writeLong(id);
         dest.writeString(title);
         dest.writeString(url);
+        dest.writeString(dataSource);
         dest.writeString(comment);
         dest.writeString(comment_html);
         dest.writeInt(comment_count);

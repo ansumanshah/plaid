@@ -34,6 +34,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Plaid">
+
         <activity
             android:name=".ui.HomeActivity"
             android:label="@string/app_name"
@@ -55,11 +56,28 @@
         <activity
             android:name=".ui.DribbbleShot"
             android:parentActivityName=".ui.HomeActivity"
-            android:theme="@style/Plaid.Translucent.DribbbleShot">
+            android:theme="@style/Plaid.Translucent.Dribbble.Shot">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="dribbble.com"
+                    android:pathPrefix="/shots/"/>
+            </intent-filter>
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.HomeActivity" />
         </activity>
+
+        <activity
+            android:name=".ui.PlayerActivity"
+            android:theme="@style/Plaid.Translucent.Dribbble.Player" />
+
+        <activity
+            android:name=".ui.PlayerSheet"
+            android:theme="@style/Plaid.Translucent.Dribbble.PlayerSheet" />
 
         <activity
             android:name=".ui.DesignerNewsStory"
@@ -90,7 +108,7 @@
             android:name=".ui.DribbbleLogin"
             android:exported="true"
             android:launchMode="singleTop"
-            android:theme="@style/Plaid.Translucent.DribbbleLogin">
+            android:theme="@style/Plaid.Translucent.Dribbble.Login">
             <intent-filter>
                 <data
                     android:host="dribbble-auth-callback"
@@ -151,7 +169,7 @@
             android:name="io.plaidapp.util.glide.GlideConfiguration"
             android:value="GlideModule" />
         <meta-data
-            android:name="com.bumptech.glide.integration.okhttp.OkHttpGlideModule"
+            android:name="com.bumptech.glide.integration.okhttp3.OkHttpGlideModule"
             android:value="GlideModule" />
 
     </application>

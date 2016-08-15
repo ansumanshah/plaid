@@ -18,6 +18,8 @@ package io.plaidapp.util;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Outline;
 import android.graphics.Rect;
@@ -56,6 +58,19 @@ public class ViewUtils {
         return actionBarSize;
     }
 
+    /**
+     * Determine if the navigation bar will be on the bottom of the screen, based on logic in
+     * PhoneWindowManager.
+     */
+    public static boolean isNavBarOnBottom(@NonNull Context context) {
+        final Resources res= context.getResources();
+        final Configuration cfg = context.getResources().getConfiguration();
+        final DisplayMetrics dm =res.getDisplayMetrics();
+        boolean canMove = (dm.widthPixels != dm.heightPixels &&
+                cfg.smallestScreenWidthDp < 600);
+        return(!canMove || dm.widthPixels < dm.heightPixels);
+    }
+
     public static RippleDrawable createRipple(@ColorInt int color,
                                               @FloatRange(from = 0f, to = 1f) float alpha,
                                               boolean bounded) {
@@ -70,22 +85,27 @@ public class ViewUtils {
                                               @ColorInt int fallbackColor,
                                               boolean bounded) {
         int rippleColor = fallbackColor;
-        // try the named swatches in preference order
-        if (palette.getVibrantSwatch() != null) {
-            rippleColor = ColorUtils.modifyAlpha(palette.getVibrantSwatch().getRgb(), darkAlpha);
-        } else if (palette.getLightVibrantSwatch() != null) {
-            rippleColor = ColorUtils.modifyAlpha(palette.getLightVibrantSwatch().getRgb(),
-                    lightAlpha);
-        } else if (palette.getDarkVibrantSwatch() != null) {
-            rippleColor = ColorUtils.modifyAlpha(palette.getDarkVibrantSwatch().getRgb(),
-                    darkAlpha);
-        } else if (palette.getMutedSwatch() != null) {
-            rippleColor = ColorUtils.modifyAlpha(palette.getMutedSwatch().getRgb(), darkAlpha);
-        } else if (palette.getLightMutedSwatch() != null) {
-            rippleColor = ColorUtils.modifyAlpha(palette.getLightMutedSwatch().getRgb(),
-                    lightAlpha);
-        } else if (palette.getDarkMutedSwatch() != null) {
-            rippleColor = ColorUtils.modifyAlpha(palette.getDarkMutedSwatch().getRgb(), darkAlpha);
+        if (palette != null) {
+            // try the named swatches in preference order
+            if (palette.getVibrantSwatch() != null) {
+                rippleColor =
+                        ColorUtils.modifyAlpha(palette.getVibrantSwatch().getRgb(), darkAlpha);
+
+            } else if (palette.getLightVibrantSwatch() != null) {
+                rippleColor = ColorUtils.modifyAlpha(palette.getLightVibrantSwatch().getRgb(),
+                        lightAlpha);
+            } else if (palette.getDarkVibrantSwatch() != null) {
+                rippleColor = ColorUtils.modifyAlpha(palette.getDarkVibrantSwatch().getRgb(),
+                        darkAlpha);
+            } else if (palette.getMutedSwatch() != null) {
+                rippleColor = ColorUtils.modifyAlpha(palette.getMutedSwatch().getRgb(), darkAlpha);
+            } else if (palette.getLightMutedSwatch() != null) {
+                rippleColor = ColorUtils.modifyAlpha(palette.getLightMutedSwatch().getRgb(),
+                        lightAlpha);
+            } else if (palette.getDarkMutedSwatch() != null) {
+                rippleColor =
+                        ColorUtils.modifyAlpha(palette.getDarkMutedSwatch().getRgb(), darkAlpha);
+            }
         }
         return new RippleDrawable(ColorStateList.valueOf(rippleColor), null,
                 bounded ? new ColorDrawable(Color.WHITE) : null);
@@ -181,6 +201,8 @@ public class ViewUtils {
      * Determines if two views intersect in the window.
      */
     public static boolean viewsIntersect(View view1, View view2) {
+        if (view1 == null || view2 == null) return false;
+
         final int[] view1Loc = new int[2];
         view1.getLocationOnScreen(view1Loc);
         final Rect view1Rect = new Rect(view1Loc[0],
@@ -194,6 +216,34 @@ public class ViewUtils {
                 view2Loc[0] + view2.getWidth(),
                 view2Loc[1] + view2.getHeight());
         return view1Rect.intersect(view2Rect);
+    }
+
+    public static void setPaddingStart(View view, int paddingStart) {
+        view.setPaddingRelative(paddingStart,
+                view.getPaddingTop(),
+                view.getPaddingEnd(),
+                view.getPaddingBottom());
+    }
+
+    public static void setPaddingTop(View view, int paddingTop) {
+        view.setPaddingRelative(view.getPaddingStart(),
+                paddingTop,
+                view.getPaddingEnd(),
+                view.getPaddingBottom());
+    }
+
+    public static void setPaddingEnd(View view, int paddingEnd) {
+        view.setPaddingRelative(view.getPaddingStart(),
+                view.getPaddingTop(),
+                paddingEnd,
+                view.getPaddingBottom());
+    }
+
+    public static void setPaddingBottom(View view, int paddingBottom) {
+        view.setPaddingRelative(view.getPaddingStart(),
+                view.getPaddingTop(),
+                view.getPaddingEnd(),
+                paddingBottom);
     }
 
 }

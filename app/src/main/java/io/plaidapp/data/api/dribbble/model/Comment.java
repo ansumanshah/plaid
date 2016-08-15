@@ -22,7 +22,7 @@ import android.widget.TextView;
 
 import java.util.Date;
 
-import io.plaidapp.util.HtmlUtils;
+import io.plaidapp.util.DribbbleUtils;
 
 /**
  * Models a commend on a Dribbble shot.
@@ -58,8 +58,8 @@ public class Comment {
 
     public Spanned getParsedBody(TextView textView) {
         if (parsedBody == null && !TextUtils.isEmpty(body)) {
-            parsedBody = HtmlUtils.parseHtml(body, textView.getLinkTextColors(), textView
-                    .getHighlightColor());
+            parsedBody = DribbbleUtils.parseDribbbleHtml(body, textView.getLinkTextColors(),
+                    textView.getHighlightColor());
         }
         return parsedBody;
     }

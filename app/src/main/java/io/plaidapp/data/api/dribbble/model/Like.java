@@ -23,7 +23,7 @@ import java.util.Date;
 /**
  * Models a like of a Dribbble shot.
  */
-public class Like {
+public class Like implements PlayerListable {
 
     public final long id;
     public final Date created_at;
@@ -35,5 +35,20 @@ public class Like {
         this.created_at = created_at;
         this.user = user;
         this.shot = shot;
+    }
+
+    @Override
+    public User getPlayer() {
+        return user;
+    }
+
+    @Override
+    public long getId() {
+        return id;
+    }
+
+    @Override
+    public Date getDateCreated() {
+        return created_at;
     }
 }

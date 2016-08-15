@@ -22,21 +22,17 @@ import android.app.SharedElementCallback;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
-import android.transition.ArcMotion;
 import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AnimationUtils;
-import android.view.animation.Interpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -44,52 +40,61 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.util.List;
 
 import io.plaidapp.BuildConfig;
 import io.plaidapp.R;
-import io.plaidapp.data.api.AuthInterceptor;
 import io.plaidapp.data.api.dribbble.DribbbleAuthService;
-import io.plaidapp.data.api.dribbble.DribbbleService;
 import io.plaidapp.data.api.dribbble.model.AccessToken;
 import io.plaidapp.data.api.dribbble.model.User;
 import io.plaidapp.data.prefs.DribbblePrefs;
-import io.plaidapp.ui.transitions.FabDialogMorphSetup;
-import io.plaidapp.ui.transitions.MorphDialogToFab;
-import io.plaidapp.ui.transitions.MorphFabToDialog;
+import io.plaidapp.ui.transitions.FabTransform;
+import io.plaidapp.ui.transitions.MorphTransform;
 import io.plaidapp.util.ScrimUtil;
 import io.plaidapp.util.glide.CircleTransform;
-import retrofit.Callback;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
-import retrofit.converter.GsonConverter;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class DribbbleLogin extends Activity {
 
+    private static final String STATE_LOGIN_FAILED = "loginFailed";
+
     boolean isDismissing = false;
+    boolean isLoginFailed = false;
     private ViewGroup container;
     private TextView message;
     private Button login;
     private ProgressBar loading;
     private DribbblePrefs dribbblePrefs;
+    private TextView loginFailed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dribbble_login);
-        FabDialogMorphSetup.setupSharedEelementTransitions(this, container,
-                getResources().getDimensionPixelSize(R.dimen.dialog_corners));
 
         container = (ViewGroup) findViewById(R.id.container);
         message = (TextView) findViewById(R.id.login_message);
         login = (Button) findViewById(R.id.login);
         loading = (ProgressBar) findViewById(R.id.loading);
+        loginFailed = (TextView) container.findViewById(R.id.login_failed_message);
         loading.setVisibility(View.GONE);
         dribbblePrefs = DribbblePrefs.get(this);
+
+        if (!FabTransform.setup(this, container)) {
+            MorphTransform.setup(this, container,
+                    ContextCompat.getColor(this, R.color.background_light),
+                    getResources().getDimensionPixelSize(R.dimen.dialog_corners));
+        }
+
+        if (savedInstanceState != null) {
+            isLoginFailed = savedInstanceState.getBoolean(STATE_LOGIN_FAILED, false);
+            loginFailed.setVisibility(isLoginFailed ? View.VISIBLE : View.GONE);
+        }
 
         checkAuthCallback(getIntent());
     }
@@ -116,10 +121,17 @@ public class DribbbleLogin extends Activity {
         dismiss(null);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putBoolean(STATE_LOGIN_FAILED, isLoginFailed);
+    }
+
     private void showLoading() {
         TransitionManager.beginDelayedTransition(container);
         message.setVisibility(View.GONE);
         login.setVisibility(View.GONE);
+        loginFailed.setVisibility(View.GONE);
         loading.setVisibility(View.VISIBLE);
     }
 
@@ -141,55 +153,55 @@ public class DribbbleLogin extends Activity {
     }
 
     private void getAccessToken(String code) {
-        RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint(DribbbleAuthService.ENDPOINT)
-                .build();
+        final DribbbleAuthService dribbbleAuthApi = new Retrofit.Builder()
+                .baseUrl(DribbbleAuthService.ENDPOINT)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create((DribbbleAuthService.class));
 
-        DribbbleAuthService dribbbleAuthApi = restAdapter.create((DribbbleAuthService.class));
-
-        dribbbleAuthApi.getAccessToken(BuildConfig.DRIBBBLE_CLIENT_ID,
+        final Call<AccessToken> accessTokenCall = dribbbleAuthApi.getAccessToken(BuildConfig
+                .DRIBBBLE_CLIENT_ID,
                 BuildConfig.DRIBBBLE_CLIENT_SECRET,
-                code, "", new Callback<AccessToken>() {
-                    @Override
-                    public void success(AccessToken accessToken, Response response) {
-                        dribbblePrefs.setAccessToken(accessToken.access_token);
-                        showLoggedInUser();
-                        setResult(Activity.RESULT_OK);
-                        finishAfterTransition();
-                    }
+                code);
+        accessTokenCall.enqueue(new Callback<AccessToken>() {
+            @Override
+            public void onResponse(Call<AccessToken> call, Response<AccessToken> response) {
+                if (response.body() == null) {
+                    showLoginFailed();
+                    return;
+                }
+                isLoginFailed = false;
+                dribbblePrefs.setAccessToken(response.body().access_token);
+                showLoggedInUser();
+                setResult(Activity.RESULT_OK);
+                finishAfterTransition();
+            }
 
-                    @Override
-                    public void failure(RetrofitError error) {
-                        Log.e(getClass().getCanonicalName(), error.getMessage(), error);
-                        // TODO snackbar?
-                        Toast.makeText(getApplicationContext(), "Log in failed: " + error
-                                .getResponse()
-                                .getStatus(), Toast.LENGTH_LONG).show();
-                        showLogin();
-                    }
-                });
+            @Override
+            public void onFailure(Call<AccessToken> call, Throwable t) {
+                Log.e(getClass().getCanonicalName(), t.getMessage(), t);
+                showLoginFailed();
+            }
+        });
+    }
+
+    private void showLoginFailed() {
+        isLoginFailed = true;
+        showLogin();
+        loginFailed.setVisibility(View.VISIBLE);
     }
 
     private void showLoggedInUser() {
-        Gson gson = new GsonBuilder()
-                .setDateFormat(DribbbleService.DATE_FORMAT)
-                .create();
-
-        RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint(DribbbleService.ENDPOINT)
-                .setConverter(new GsonConverter(gson))
-                .setRequestInterceptor(new AuthInterceptor(dribbblePrefs.getAccessToken()))
-                .build();
-
-        DribbbleService dribbbleApi = restAdapter.create((DribbbleService.class));
-        dribbbleApi.getAuthenticatedUser(new Callback<User>() {
+        final Call<User> authenticatedUser = dribbblePrefs.getApi().getAuthenticatedUser();
+        authenticatedUser.enqueue(new Callback<User>() {
             @Override
-            public void success(User user, Response response) {
+            public void onResponse(Call<User> call, Response<User> response) {
+                final User user = response.body();
                 dribbblePrefs.setLoggedInUser(user);
-                Toast confirmLogin = new Toast(getApplicationContext());
-                View v = LayoutInflater.from(DribbbleLogin.this).inflate(R.layout
+                final Toast confirmLogin = new Toast(getApplicationContext());
+                final View v = LayoutInflater.from(DribbbleLogin.this).inflate(R.layout
                         .toast_logged_in_confirmation, null, false);
-                ((TextView) v.findViewById(R.id.name)).setText(user.name);
+                ((TextView) v.findViewById(R.id.name)).setText(user.name.toLowerCase());
                 // need to use app context here as the activity will be destroyed shortly
                 Glide.with(getApplicationContext())
                         .load(user.avatar_url)
@@ -206,7 +218,8 @@ public class DribbbleLogin extends Activity {
             }
 
             @Override
-            public void failure(RetrofitError error) {
+            public void onFailure(Call<User> call, Throwable t) {
+
             }
         });
     }

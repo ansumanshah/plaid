@@ -17,36 +17,32 @@
 package io.plaidapp.data;
 
 import android.content.Context;
-import android.os.AsyncTask;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.plaidapp.data.api.designernews.model.StoriesResponse;
-import io.plaidapp.data.api.dribbble.DribbbleSearch;
+import io.plaidapp.data.api.designernews.model.Story;
+import io.plaidapp.data.api.dribbble.DribbbleSearchService;
 import io.plaidapp.data.api.dribbble.model.Shot;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * Responsible for loading search results from dribbble and designer news. Instantiating classes are
  * responsible for providing the {code onDataLoaded} method to do something with the data.
  */
-public abstract class SearchDataManager extends BaseDataManager implements DataLoadingSubject {
+public abstract class SearchDataManager extends BaseDataManager<List<? extends PlaidItem>> {
 
     // state
     private String query = "";
-    private boolean loadingDribbble = false;
-    private boolean loadingDesignerNews = false;
     private int page = 1;
+    private List<Call> inflight;
 
     public SearchDataManager(Context context) {
         super(context);
-    }
-
-    @Override
-    public boolean isDataLoading() {
-        return loadingDribbble || loadingDesignerNews;
+        inflight = new ArrayList<>();
     }
 
     public void searchFor(String query) {
@@ -65,11 +61,20 @@ public abstract class SearchDataManager extends BaseDataManager implements DataL
     }
 
     public void clear() {
+        cancelLoading();
         query = "";
         page = 1;
-        loadingDribbble = false;
-        loadingDesignerNews = false;
+        resetLoadingCount();
+    }
 
+    @Override
+    public void cancelLoading() {
+        if (inflight.size() > 0) {
+            for (Call call : inflight) {
+                call.cancel();
+            }
+            inflight.clear();
+        }
     }
 
     public String getQuery() {
@@ -77,44 +82,69 @@ public abstract class SearchDataManager extends BaseDataManager implements DataL
     }
 
     private void searchDesignerNews(final String query, final int resultsPage) {
-        loadingDesignerNews = true;
-        getDesignerNewsApi().search(query, resultsPage, new Callback<StoriesResponse>() {
+        loadStarted();
+        final Call<StoriesResponse> dnSearchCall = getDesignerNewsApi().search(query, resultsPage);
+        dnSearchCall.enqueue(new Callback<StoriesResponse>() {
             @Override
-            public void success(StoriesResponse storiesResponse, Response response) {
-                if (storiesResponse != null) {
-                    setPage(storiesResponse.stories, resultsPage);
-                    setDataSource(storiesResponse.stories,
-                            Source.DribbbleSearchSource.DRIBBBLE_QUERY_PREFIX + query);
-                    onDataLoaded(storiesResponse.stories);
+            public void onResponse(Call<StoriesResponse> call, Response<StoriesResponse> response) {
+                if (response.isSuccessful()) {
+                    loadFinished();
+                    final List<Story> stories =
+                            response.body() != null ? response.body().stories : null;
+                    if (stories != null) {
+                        setPage(stories, resultsPage);
+                        setDataSource(stories,
+                                Source.DesignerNewsSearchSource.DESIGNER_NEWS_QUERY_PREFIX + query);
+                        onDataLoaded(stories);
+                    }
+                    inflight.remove(dnSearchCall);
+                } else {
+                    failure(dnSearchCall);
                 }
-                loadingDesignerNews = false;
             }
 
             @Override
-            public void failure(RetrofitError error) {
-                loadingDesignerNews = false;
+            public void onFailure(Call<StoriesResponse> call, Throwable t) {
+                failure(dnSearchCall);
             }
         });
+        inflight.add(dnSearchCall);
     }
 
-    private void searchDribbble(final String query, final int page) {
-        loadingDribbble = true;
-        new AsyncTask<Void, Void, List<Shot>>() {
+    private void searchDribbble(final String query, final int resultsPage) {
+        loadStarted();
+        final Call<List<Shot>> dribbbleSearchCall = getDribbbleSearchApi().search(
+                query, resultsPage, DribbbleSearchService.PER_PAGE_DEFAULT,
+                DribbbleSearchService.SORT_POPULAR);
+        dribbbleSearchCall.enqueue(new Callback<List<Shot>>() {
             @Override
-            protected List<Shot> doInBackground(Void... params) {
-                return DribbbleSearch.search(query, DribbbleSearch.SORT_POPULAR, page);
+            public void onResponse(Call<List<Shot>> call, Response<List<Shot>> response) {
+                if (response.isSuccessful()) {
+                    loadFinished();
+                    final List<Shot> shots = response.body();
+                    if (shots != null) {
+                        setPage(shots, resultsPage);
+                        setDataSource(shots,
+                                Source.DribbbleSearchSource.DRIBBBLE_QUERY_PREFIX + query);
+                        onDataLoaded(shots);
+                    }
+                    inflight.remove(dribbbleSearchCall);
+                } else {
+                    failure(dribbbleSearchCall);
+                }
             }
 
             @Override
-            protected void onPostExecute(List<Shot> shots) {
-                if (shots != null && shots.size() > 0) {
-                    setPage(shots, page);
-                    setDataSource(shots, "Dribbble Search");
-                    onDataLoaded(shots);
-                }
-                loadingDribbble = false;
+            public void onFailure(Call<List<Shot>> call, Throwable t) {
+                failure(dribbbleSearchCall);
             }
-        }.execute();
+        });
+        inflight.add(dribbbleSearchCall);
+    }
+
+    private void failure(Call call) {
+        loadFinished();
+        inflight.remove(call);
     }
 
 }
